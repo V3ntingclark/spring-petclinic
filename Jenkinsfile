@@ -29,6 +29,7 @@ pipeline {
     stage('Package') {
       steps {
         pwsh 'mnv package'
+        archiveArtifacts '**/target/*.jar'
       }
     }
 
