@@ -9,26 +9,26 @@ pipeline {
 
     stage('Build') {
       steps {
-        pwsh 'mvn clean compile'
+        sh 'mvn clean compile'
       }
     }
 
     stage('SonarQube Analysis') {
       steps {
-        pwsh 'def scannerHome = tool \'SonarQubeScanner\' withSonarQubeEnv(\'SonarQube\') {     sh "${scannerHome}/bin/sonar-scanner" }'
+        sh 'def scannerHome = tool \'SonarQubeScanner\' withSonarQubeEnv(\'SonarQube\') {     sh "${scannerHome}/bin/sonar-scanner" }'
       }
     }
 
     stage('Unit Test') {
       steps {
-        pwsh 'mnv test'
         junit '**/target/surefire-reports/TEST-*.xml'
+        sh 'mnv test'
       }
     }
 
     stage('Package') {
       steps {
-        pwsh 'mnv package'
+        sh 'mnv package'
         archiveArtifacts '**/target/*.jar'
       }
     }
