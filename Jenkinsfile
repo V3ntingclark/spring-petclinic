@@ -15,38 +15,31 @@ pipeline {
 
     stage('SonarQube Analysis') {
       steps {
-        sh '''script {
-    def scannerHome = tool \'SonarQubeScanner\'
-    withSonarQubeEnv(\'SonarQube\') {
-        sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=spring-petclinic -Dsonar.login=${SONARQUBE_TOKEN}"
-    }
-}
-'''
+        script {
           script {
-            script {
-              def scannerHome = tool 'SonarQubeScanner'
-              withSonarQubeEnv('SonarQube') {
-                sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=spring-petclinic -Dsonar.login=${SONARQUBE_TOKEN}"
-              }
+            def scannerHome = tool 'SonarQubeScanner'
+            withSonarQubeEnv('SonarQube') {
+              sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=spring-petclinic -Dsonar.login=${SONARQUBE_TOKEN}"
             }
           }
-
         }
-      }
 
-      stage('Unit Test') {
-        steps {
-          junit '**/target/surefire-reports/TEST-*.xml'
-          sh 'mvn test'
-        }
       }
-
-      stage('Package') {
-        steps {
-          sh 'mvn package'
-          archiveArtifacts '**/target/*.jar'
-        }
-      }
-
     }
+
+    stage('Unit Test') {
+      steps {
+        junit '**/target/surefire-reports/TEST-*.xml'
+        sh 'mvn test'
+      }
+    }
+
+    stage('Package') {
+      steps {
+        sh 'mvn package'
+        archiveArtifacts '**/target/*.jar'
+      }
+    }
+
   }
+}
