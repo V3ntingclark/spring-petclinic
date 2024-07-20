@@ -22,13 +22,13 @@ pipeline {
     stage('Unit Test') {
       steps {
         junit '**/target/surefire-reports/TEST-*.xml'
-        sh 'mnv test'
+        sh 'mvn test'
       }
     }
 
     stage('Package') {
       steps {
-        sh 'mnv package'
+        sh 'mvn package'
         archiveArtifacts '**/target/*.jar'
       }
     }
