@@ -22,6 +22,15 @@ pipeline {
     }
 }
 '''
+          script {
+            script {
+              def scannerHome = tool 'SonarQubeScanner'
+              withSonarQubeEnv('SonarQube') {
+                sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=spring-petclinic -Dsonar.login=${SONARQUBE_TOKEN}"
+              }
+            }
+          }
+
         }
       }
 
