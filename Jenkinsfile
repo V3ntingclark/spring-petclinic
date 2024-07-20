@@ -15,27 +15,28 @@ pipeline {
 
     stage('SonarQube Analysis') {
       steps {
-        sh '''def scannerHome = tool \'SonarQubeScanner\'
-withSonarQubeEnv(\'SonarQube\') {
-    sh "${scannerHome}/bin/sonar-scanner"
-}
-'''
-      }
+        sh '''script {
+    def scannerHome = tool \'SonarQubeScanner\'
+    withSonarQubeEnv(\'SonarQube\') {
+        sh "${scannerHome}/bin/sonar-scanner"
     }
-
-    stage('Unit Test') {
-      steps {
-        junit '**/target/surefire-reports/TEST-*.xml'
-        sh 'mvn test'
+}'''
+        }
       }
-    }
 
-    stage('Package') {
-      steps {
-        sh 'mvn package'
-        archiveArtifacts '**/target/*.jar'
+      stage('Unit Test') {
+        steps {
+          junit '**/target/surefire-reports/TEST-*.xml'
+          sh 'mvn test'
+        }
       }
-    }
 
+      stage('Package') {
+        steps {
+          sh 'mvn package'
+          archiveArtifacts '**/target/*.jar'
+        }
+      }
+
+    }
   }
-}
