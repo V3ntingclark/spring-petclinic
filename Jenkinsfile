@@ -19,8 +19,8 @@ pipeline {
           script {
             def scannerHome = tool 'SonarQube'
             withSonarQubeEnv('SonarQube') {
-              withCredentials([string(credentialsId: 'sonar-token-id', variable: 'SONARQUBE_TOKEN')]) {
-                sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=spring-petclinic -Dsonar.login=${SONARQUBE_TOKEN}"
+              withCredentials([usernamePassword(credentialsId: 'sonar-credentials-id', usernameVariable: 'SONARQUBE_USERNAME', passwordVariable: 'SONARQUBE_PASSWORD')]) {
+                sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=spring-petclinic -Dsonar.login=${SONARQUBE_USERNAME} -Dsonar.password=${SONARQUBE_PASSWORD}"
               }
             }
           }
