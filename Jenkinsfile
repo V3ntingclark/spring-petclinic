@@ -1,69 +1,61 @@
 pipeline {
-  agent any
-  stages {
-    stage('Checkout') {
-      steps {
-        git(branch: 'main', url: 'https://github.com/V3ntingclark/spring-petclinic')
-      }
+    agent any
+    tools {
+        jdk 'JDK 17'
     }
-
-    stage('Build') {
-      steps {
-        sh 'mvn clean compile'
-      }
+    environment {
+        SONARQUBE_URL = 'http://3.143.110.235:9000'
     }
-
-    stage('SonarQube Analysis') {
-      steps {
-        script {
-          def scannerHome = tool name: 'SonarQube', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
-          withSonarQubeEnv('SonarQube') {
-            withCredentials([usernamePassword(credentialsId: 'sonar-credentials-id', usernameVariable: 'SONARQUBE_USERNAME', passwordVariable: 'SONARQUBE_PASSWORD')]) {
-              withEnv(["SONAR_SCANNER_OPTS=-Dsonar.login=${SONARQUBE_USERNAME} -Dsonar.password=${SONARQUBE_PASSWORD}"]) {
-                sh """
-                ${scannerHome}/bin/sonar-scanner \
-                -Dsonar.projectKey=spring-petclinic \
-                -Dsonar.host.url=${SONARQUBE_URL} \
-                -Dsonar.java.binaries=target/classes \
-                -X
-                """
-              }
+    stages {
+        stage('Checkout') {
+            steps {
+                git(branch: 'main', url: 'https://github.com/V3ntingclark/spring-petclinic')
             }
-          }
         }
-
-      }
-    }
-
-    stage('Unit Test') {
-      post {
-        always {
-          junit '**/target/surefire-reports/TEST-*.xml'
+        stage('Build') {
+            steps {
+                sh 'mvn clean compile'
+            }
         }
-
-      }
-      steps {
-        sh 'mvn test'
-      }
-    }
-
-    stage('Package') {
-      post {
-        success {
-          archiveArtifacts(artifacts: '**/target/*.jar', allowEmptyArchive: true)
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    def scannerHome = tool name: 'SonarQube', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
+                    withSonarQubeEnv('SonarQube') {
+                        withCredentials([usernamePassword(credentialsId: 'sonar-credentials-id', usernameVariable: 'SONARQUBE_USERNAME', passwordVariable: 'SONARQUBE_PASSWORD')]) {
+                            withEnv(["SONAR_SCANNER_OPTS=-Dsonar.login=${SONARQUBE_USERNAME} -Dsonar.password=${SONARQUBE_PASSWORD}"]) {
+                                sh """
+                                ${scannerHome}/bin/sonar-scanner \
+                                -Dsonar.projectKey=spring-petclinic \
+                                -Dsonar.host.url=${SONARQUBE_URL} \
+                                -Dsonar.java.binaries=target/classes \
+                                -X
+                                """
+                            }
+                        }
+                    }
+                }
+            }
         }
-
-      }
-      steps {
-        sh 'mvn package'
-      }
+        stage('Unit Test') {
+            steps {
+                sh 'mvn test'
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/TEST-*.xml'
+                }
+            }
+        }
+        stage('Package') {
+            steps {
+                sh 'mvn package'
+            }
+            post {
+                success {
+                    archiveArtifacts(artifacts: '**/target/*.jar', allowEmptyArchive: true)
+                }
+            }
+        }
     }
-
-  }
-  tools {
-    jdk 'JDK 17'
-  }
-  environment {
-    SONARQUBE_URL = 'http://3.143.110.235:9000'
-  }
 }
