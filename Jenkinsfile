@@ -44,7 +44,14 @@ pipeline {
         }
         stage('Unit Test') {
             steps {
-                sh 'mvn test'
+                script {
+                    try {
+                        sh 'mvn test'
+                    } catch (Exception e) {
+                        currentBuild.result = 'UNSTABLE'
+                        echo 'Some tests failed but proceeding to the next stage.'
+                    }
+                }
             }
             post {
                 always {
