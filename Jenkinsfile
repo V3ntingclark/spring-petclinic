@@ -64,6 +64,6 @@ pipeline {
     jdk 'JDK 17'
   }
   environment {
-    SONARQUBE_URL = 'http://http://3.143.110.235:9000'
+    SONARQUBE_URL = 'http://3.143.110.235:9000'
   }
 }
