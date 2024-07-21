@@ -7,6 +7,7 @@ pipeline {
     environment {
         SONARQUBE_URL = 'http://3.143.110.235:9000'
         CHROMEDRIVER_PATH = '/usr/local/bin/chromedriver'
+        BROWSER_PATH = '/usr/bin/chromium-browser'
     }
     stages {
         stage('Checkout') {
@@ -45,17 +46,10 @@ pipeline {
         }
         stage('Unit Test') {
             steps {
-                script {
-                    try {
-                        // Setting the ChromeDriver system property for the tests
-                        sh """
-                        mvn test -Dwebdriver.chrome.driver=${CHROMEDRIVER_PATH}
-                        """
-                    } catch (Exception e) {
-                        currentBuild.result = 'UNSTABLE'
-                        echo 'Some tests failed but proceeding to the next stage.'
-                    }
-                }
+                // Setting the ChromeDriver system property for the tests
+                sh """
+                mvn test -Dwebdriver.chrome.driver=${CHROMEDRIVER_PATH}
+                """
             }
             post {
                 always {
@@ -65,13 +59,11 @@ pipeline {
         }
         stage('Package') {
             steps {
-                script {
-                    if (currentBuild.result == 'UNSTABLE') {
-                        echo 'Skipping tests during package phase due to earlier test failures.'
-                        sh 'mvn package -Pskip-tests'
-                    } else {
-                        sh 'mvn package'
-                    }
+                sh 'mvn package'
+            }
+            post {
+                success {
+                    archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true
                 }
             }
         }
@@ -89,17 +81,17 @@ pipeline {
                     nexusArtifactUploader(
                         nexusVersion: 'nexus3',
                         protocol: 'http',
-                        nexusUrl = nexusUrl,
-                        groupId = groupId,
-                        version = version,
-                        repository = nexusRepository,
-                        credentialsId = 'nexus-credentials',
-                        artifacts = [
+                        nexusUrl: nexusUrl,
+                        groupId: groupId,
+                        version: version,
+                        repository: nexusRepository,
+                        credentialsId: 'nexus-credentials',
+                        artifacts: [
                             [
-                                artifactId = artifactId,
-                                classifier = '',
-                                file = artifactPath,
-                                type = packaging
+                                artifactId: artifactId,
+                                classifier: '',
+                                file: artifactPath,
+                                type: packaging
                             ]
                         ]
                     )
